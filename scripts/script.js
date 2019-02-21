@@ -3,7 +3,7 @@
 //   console.log('inside');
   // require(['dictionary'])
   // debugger
-dictionary = [
+var dictionary = [
     'people',
     'history',
     'way',
@@ -1531,94 +1531,135 @@ dictionary = [
     'yesterday'
   ]
 
-function makeGame() {
-  var words = new Set
-  var addWords = function(words, dictionary) {
-    if (words.size === 25) { return }
 
-    var newWord = dictionary[Math.floor(Math.random() * dictionary.length)]
-    if (!words[newWord]) {
-      words.add(newWord)
-    }
 
-    return addWords(words, dictionary)
-  }
-  addWords(words, dictionary)
 
-  var possibleOutcomes = ['none', 'red', 'blue', 'neutral']
+
+function makeGame(dictionary) {
+  var startColor = Math.random() > 0.5 ? 'red' : 'blue'
+  var secondColor = startColor === 'red' ? 'blue' : 'red'
+
   var board = document.getElementById("board")
 
+  var words = new Set
+  generateWordSet(words, dictionary)
+  var solutionGrid = generateSolutionGrid(startColor, secondColor)
+  var cards = generateCards(words, solutionGrid, board)
+  bindResetGame(board, dictionary)
+  bindToggleShowHide(cards)
+  alertStartColor(startColor)
+}
+
+function generateWordSet(words, dictionary) {
+  if (words.size === 25) { return }
+
+  var newWord = dictionary[Math.floor(Math.random() * dictionary.length)]
+  if (!words[newWord]) {
+    words.add(newWord)
+  }
+
+  // recurse to continue adding
+  generateWordSet(words, dictionary)
+}
+
+function generateSolutionGrid(startColor, secondColor) {
+  var solutionGrid = new Array(25)
+
+  generateColorEntry(startColor, 9, solutionGrid)
+  generateColorEntry(secondColor, 8, solutionGrid)
+  generateColorEntry('neutral', 7, solutionGrid)
+  generateColorEntry('assassin', 1, solutionGrid)
+
+  return solutionGrid
+}
+
+function generateColorEntry(color, count, solutionGrid) {
+  var existingColorOwner = solutionGrid.filter(square => square === color)
+  if (existingColorOwner.length === count) { return }
+  var newIndex = Math.floor(Math.random() * 25)
+  if (!solutionGrid[newIndex]) {
+    solutionGrid[newIndex] = color
+  }
+  // recurse to continue adding
+  generateColorEntry(color, count, solutionGrid)
+}
+
+function generateCards(words, solutionGrid, board) {
+  var possibleOutcomes = ['none', 'red', 'blue', 'neutral']
+  var cards = []
+
+  var index = 0
   words.forEach(function(word) {
     var card = document.createElement('div')
     card.classList.add('card')
     card.setAttribute('outcome', 'none')
+    card.setAttribute('colorOwner', solutionGrid[index])
     card.innerHTML = word.toUpperCase()
-    card.onclick = function(e) {
-      var prevOutcome = card.getAttribute('outcome')
-      var outcomeIndex = possibleOutcomes.indexOf(prevOutcome)
-      var newIndex = outcomeIndex + 1
-      if (newIndex > possibleOutcomes.length - 1) {
-        newIndex = 0
-      }
-      var outcome = possibleOutcomes[newIndex]
-      card.setAttribute('outcome', outcome)
-      card.classList.remove(prevOutcome)
-      card.classList.add(outcome)
-    }
+    card.onclick = generateSwitchCardColorCallback(card, possibleOutcomes)
     board.append(card)
+    cards.push(card)
+    index += 1
   })
 
-  var solutionGrid = new Array(25)
-  var startColor = Math.random > 0.5 ? 'red' : 'blue'
-  var secondColor = startColor === 'red' ? 'blue' : 'red'
-  var addOwner = function(owner, count) {
-    if (solutionGrid.filter(space => space === owner).length === count) { return }
-    var newIndex = Math.floor(Math.random() * 25)
-    if (!solutionGrid[newIndex]) {
-      solutionGrid[newIndex] = owner
+  return cards
+}
+
+function generateSwitchCardColorCallback(card, possibleOutcomes) {
+  return function(event) {
+    var prevOutcome = card.getAttribute('outcome')
+    var outcomeIndex = possibleOutcomes.indexOf(prevOutcome)
+    var newIndex = outcomeIndex + 1
+    if (newIndex > possibleOutcomes.length - 1) {
+      newIndex = 0
     }
-    addOwner(owner, count)
+    var outcome = possibleOutcomes[newIndex]
+    card.setAttribute('outcome', outcome)
+    card.classList.remove(prevOutcome)
+    card.classList.add(outcome)
   }
-  var generateSolution = function() {
-    addOwner(startColor, 9)
-    addOwner(secondColor, 8)
-    addOwner('neutral', 7)
-    addOwner('assassin', 1)
-  }
-  generateSolution()
+}
 
-  var solution = document.getElementById('solution')
-  solutionGrid.forEach(space => {
-    var card = document.createElement('div')
-    card.classList.add(space, 'solution-card')
-    solution.append(card)
-  })
-
-  solution.classList.add('hidden')
-
+function bindToggleShowHide(cards) {
   var toggle = document.getElementById('toggle')
   toggle.innerHTML = 'show'
   toggle.onclick = function(e) {
     if (toggle.innerHTML === 'show') {
       toggle.innerHTML = 'hide'
-      solution.classList.remove('hidden')
+      toggleShowCardColorOwners(cards, 'show')
     } else {
       toggle.innerHTML = 'show'
-      solution.classList.add('hidden')
-    }
-  }
-
-  var reset = document.getElementById('reset')
-  var resetGame = function() {
-    board.innerHTML = ''
-    solution.innerHTML = ''
-    makeGame()
-  }
-  reset.onclick = function(e) {
-    if (confirm('Are you sure you want to create a new game?')) {
-      resetGame()
+      toggleShowCardColorOwners(cards, 'hide')
     }
   }
 }
 
-makeGame()
+function toggleShowCardColorOwners(cards, action) {
+  cards.forEach(function(card) {
+    var colorOwner = card.getAttribute('colorOwner')
+    if (action === 'show') {
+      card.classList.add(colorOwner + '-border')
+    } else {
+      card.classList.remove(colorOwner + '-border')
+    }
+  })
+}
+
+function bindResetGame(board, dictionary) {
+  var reset = document.getElementById('reset')
+  reset.onclick = generateResetGameCallback(reset, board, dictionary)
+}
+
+function generateResetGameCallback(reset, board, dictionary) {
+  return function () {
+    if(confirm('Are you sure you want to create a new game?')) {
+      board.innerHTML = ''
+      makeGame(dictionary)
+    }
+  }
+}
+
+function alertStartColor(startColor) {
+  alert(startColor + ' starts this game')
+}
+
+makeGame(dictionary)
