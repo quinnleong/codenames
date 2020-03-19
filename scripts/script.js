@@ -1532,19 +1532,48 @@ var dictionary = [
   ]
 
 
+var wordSets = [
+  ['ruin','park','mall','basket','potato','collection','comfortable','physics','fruit','inspector','blue','tune','estimate','memory','evening','travel','video','apartment','classroom','intention','oven','work','improvement','while','breast'],
+  ['alcohol','blue','respect','female','project','formal','station','mom','passenger','business','beat','image','error','pool','bone','spend','ground','virus','spare','split','call','grandfather','idea','fishing','traffic'],
+  ['following','reveal','work','tomorrow','term','significance','inflation','soil','thought','forever','low','trip','muscle','drama','touch','temporary','outcome','cable','couple','source','bread','cover','resolution','wish','shop'],
+  ['region','writing','spray','promise','garden','housing','whereas','stupid','guide','wind','return','shift','end','kitchen','leadership','opportunity','kick','mountain','upper','writer','combination','respond','skirt','dance','bet'],
+  ['communication','hurt','tough','nothing','recover','kitchen','bowl','building','intention','table','gold','mud','landscape','competition','reality','move','heart','emphasis','officer','standard','sentence','opinion','source','alcohol','handle'],
+  ['variety','document','join','art','economy','tune','process','media','equivalent','purple','lip','emotion','turn','clock','club','tree','case','pair','show','street','winner','parking','kill','draft','cap'],
+  ['engine','tea','attack','blank','library','promotion','screw','cow','transition','kitchen','dependent','divide','recommendation','steak','interview','insect','go','philosophy','inside','army','book','grandmother','win','local','peak'],
+  ['shape','situation','escape','talk','plenty','move','family','account','brother','maximum','art','substance','wear','offer','distribution','use','bridge','guest','meal','cost','president','vehicle','insurance','press','conflict'],
+  ['pay','guidance','measurement','dream','virus','worker','nurse','truck','order','stranger','harm','foot','vast','movie','tank','responsibility','north','appeal','manner','performance','assistant','dirt','resist','discussion','worry'],
+  ['food','garbage','wait','principle','money','insurance','white','ask','eat','town','impression','error','team','rock','mouth','soup','resolve','candidate','cover','second','fix','wedding','variety','nerve','responsibility']
+]
 
+var solutionGrids = [
+  ["blue",["blue", "red", "red", "red", "neutral", "neutral", "neutral", "blue", "assassin", "red", "neutral", "blue", "neutral", "red", "blue", "red", "blue", "blue", "blue", "red", "neutral", "blue", "neutral", "blue", "red"]],
+  ["blue",["red", "red", "neutral", "red", "blue", "neutral", "blue", "neutral", "blue", "blue", "blue", "blue", "assassin", "red", "red", "neutral", "red", "neutral", "red", "red", "blue", "blue", "neutral", "blue", "neutral"]],
+  ["red",["blue", "red", "blue", "neutral", "blue", "neutral", "red", "red", "red", "blue", "blue", "neutral", "blue", "red", "blue", "neutral", "neutral", "blue", "red", "red", "assassin", "red", "red", "neutral", "neutral"]],
+  ["blue",["neutral", "neutral", "red", "neutral", "blue", "neutral", "red", "blue", "blue", "neutral", "red", "assassin", "red", "blue", "red", "blue", "blue", "blue", "red", "blue", "neutral", "red", "neutral", "red", "blue"]],
+  ["red",["neutral", "blue", "red", "neutral", "neutral", "red", "blue", "neutral", "blue", "red", "blue", "assassin", "red", "red", "neutral", "red", "blue", "blue", "blue", "red", "neutral", "red", "neutral", "red", "blue"]],
+  ["red",["neutral", "red", "red", "blue", "red", "blue", "blue", "red", "neutral", "assassin", "neutral", "neutral", "blue", "neutral", "red", "red", "blue", "red", "red", "neutral", "blue", "blue", "red", "blue", "neutral"]],
+  ["blue",["neutral", "blue", "neutral", "blue", "neutral", "red", "blue", "red", "blue", "blue", "red", "red", "neutral", "red", "neutral", "red", "assassin", "blue", "neutral", "neutral", "blue", "blue", "blue", "red", "red"]],
+  ["blue",["red", "blue", "blue", "red", "blue", "red", "blue", "blue", "neutral", "red", "red", "red", "neutral", "blue", "red", "neutral", "blue", "neutral", "neutral", "blue", "neutral", "assassin", "blue", "red", "neutral"]],
+  ["red",["red", "blue", "blue", "red", "red", "red", "blue", "neutral", "assassin", "blue", "red", "blue", "neutral", "red", "neutral", "blue", "red", "neutral", "neutral", "neutral", "neutral", "red", "blue", "blue", "red"]],
+  ["blue",["red", "neutral", "red", "red", "blue", "red", "blue", "red", "neutral", "red", "neutral", "blue", "blue", "neutral", "red", "assassin", "blue", "neutral", "neutral", "blue", "red", "blue", "blue", "neutral", "blue"]]
+]
 
 
 function makeGame(dictionary) {
-  var startColor = Math.random() > 0.5 ? 'red' : 'blue'
-  var secondColor = startColor === 'red' ? 'blue' : 'red'
+  // var startColor = Math.random() > 0.5 ? 'red' : 'blue'
+  // var secondColor = startColor === 'red' ? 'blue' : 'red'
 
   var board = document.getElementById("board")
 
   var words = new Set
-  generateWordSet(words, dictionary)
-  var solutionGrid = generateSolutionGrid(startColor, secondColor)
-  var cards = generateCards(words, solutionGrid, board)
+  // generateWordSet(words, dictionary)
+  // var solutionGrid = generateSolutionGrid(startColor, secondColor)
+  var wordIdx = prompt("Please enter word index #");
+  var words = wordSets[wordIdx]
+  var solutionGridIdx = prompt("Please enter solution grid index #");
+  var solutionGrid = solutionGrids[solutionGridIdx]
+  var startColor = solutionGrid[0]
+  var cards = generateCards(words, solutionGrid[1], board)
   bindResetGame(board, dictionary)
   bindToggleShowHide(cards)
   alertStartColor(startColor)
